@@ -36,7 +36,7 @@ export default function ProductGallery({ images, title }) {
             <CarouselItem key={idx}>
               <div 
                 className="aspect-[4/3] w-full bg-secondary bg-cover bg-center rounded-xl overflow-hidden" 
-                style={{ backgroundImage: `url(${img})` }} 
+                style={{ backgroundImage: `url('${img.replace(/['"]/g, '')}')` }} 
                 role="img" 
                 aria-label={`${title} view ${idx + 1}`}
               />
@@ -68,7 +68,7 @@ export default function ProductGallery({ images, title }) {
             >
               <div 
                 className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${img})` }}
+                style={{ backgroundImage: `url('${img.replace(/['"]/g, '')}')` }}
               />
             </button>
           ))}

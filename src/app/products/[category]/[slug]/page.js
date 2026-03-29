@@ -1,13 +1,14 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
-import { getProductBySlug, getProductsByCategory, categories } from '@/data/products';
+import { categories } from '@/data/products';
 import ProductGallery from '@/components/ProductGallery/ProductGallery';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import SectionHeading from '@/components/SectionHeading/SectionHeading';
 import { Button } from '@/components/ui/button';
 import { toast } from "sonner";
+import { RefreshCw } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -23,20 +24,39 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
-// Note: generateStaticParams and generateMetadata would normally be here
-// but they must be in a Server Component. Since we need client interactivity (Toast),
-// we use 'use client'. In a real Next.js app, you'd separate the interactive parts
-// into a child client component and keep the page as a server component.
-
 export default function ProductPageClient({ params }) {
   const resolvedParams = use(params);
   const { category, slug } = resolvedParams;
-  
-  const product = getProductBySlug(slug);
-  if (!product) notFound();
 
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   const categoryName = categories.find(c => c.id === category)?.name || 'Category';
-  const relatedProducts = getProductsByCategory(category).filter(p => p.id !== product.id).slice(0, 3);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch all products and find by slug
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('Failed to fetch');
+        const allProducts = await res.json();
+        
+        const found = allProducts.find(p => p.slug === slug);
+        if (!found) return;
+        
+        setProduct(found);
+        setRelatedProducts(
+          allProducts.filter(p => p.category === category && p.id !== found.id).slice(0, 3)
+        );
+      } catch (error) {
+        console.error('Failed to load product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [category, slug]);
   
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(price);
@@ -51,6 +71,19 @@ export default function ProductPageClient({ params }) {
       }
     });
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center gap-4 text-muted-foreground animate-pulse font-serif">
+        <RefreshCw size={40} className="animate-spin" />
+        <p className="tracking-widest uppercase text-xs">Loading piece details...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -106,7 +139,7 @@ export default function ProductPageClient({ params }) {
             </div>
 
             {/* Specifications Accordion */}
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion type="single" collapsible="true" className="w-full">
               <AccordionItem value="dimensions">
                 <AccordionTrigger className="font-serif text-lg py-5 hover:text-primary">
                   Dimensions
@@ -126,21 +159,6 @@ export default function ProductPageClient({ params }) {
                       <li key={idx}>{mat}</li>
                     )) || <li>Premium materials selected by artisan craftsmen.</li>}
                   </ul>
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="colors">
-                <AccordionTrigger className="font-serif text-lg py-5 hover:text-primary">
-                  Available Colors
-                </AccordionTrigger>
-                <AccordionContent className="pb-5">
-                  <div className="flex flex-wrap gap-3 mt-2">
-                    {product.colors?.map((col, idx) => (
-                      <span key={idx} className="px-4 py-2 bg-secondary text-sm font-medium rounded-md border border-border">
-                        {col}
-                      </span>
-                    ))}
-                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

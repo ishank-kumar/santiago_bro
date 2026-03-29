@@ -1,16 +1,18 @@
 import Hero from '@/components/Hero/Hero';
 import SectionHeading from '@/components/SectionHeading/SectionHeading';
 import BrandCard from '@/components/BrandCard/BrandCard';
-import { brands } from '@/data/brands';
 import { buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
+import prisma from '@/lib/prisma';
 
 export const metadata = {
   title: 'Our Brands | Santiago Bros',
   description: 'We collaborate with the world\'s most prestigious furniture makers and design houses.',
 };
 
-export default function BrandsPage() {
+export default async function BrandsPage() {
+  const brands = await prisma.brand.findMany({ orderBy: { createdAt: 'asc' } });
+
   return (
     <>
       <Hero

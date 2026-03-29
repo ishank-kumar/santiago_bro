@@ -2,24 +2,20 @@ import Hero from '@/components/Hero/Hero';
 import SectionHeading from '@/components/SectionHeading/SectionHeading';
 import CategoryCard from '@/components/CategoryCard/CategoryCard';
 import ProductCard from '@/components/ProductCard/ProductCard';
-import { categories, products } from '@/data/products';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-
+import { categories } from '@/data/products';
+import prisma from '@/lib/prisma';
 
 export const metadata = {
   title: 'Our Collections | Santiago Bros',
   description: 'Explore our eight curated collections of exceptional furniture.',
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const products = await prisma.product.findMany({
+    take: 8,
+    orderBy: { createdAt: 'desc' },
+  });
+
   return (
     <>
       <Hero
@@ -52,34 +48,9 @@ export default function ProductsPage() {
             align="left"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {products.slice(0, 8).map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
-          </div>
-
-          <div className="mt-16">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" className="text-muted-foreground hover:text-foreground hover:bg-secondary cursor-not-allowed pointer-events-none opacity-50" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" isActive className="border-primary text-primary hover:bg-primary/10">1</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" className="hover:bg-secondary">2</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" className="hover:bg-secondary">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" className="hover:bg-secondary" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
           </div>
         </div>
       </section>

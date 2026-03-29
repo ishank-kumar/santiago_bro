@@ -3,13 +3,16 @@ import SectionHeading from '@/components/SectionHeading/SectionHeading';
 import CategoryCard from '@/components/CategoryCard/CategoryCard';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import BrandCard from '@/components/BrandCard/BrandCard';
-import { categories, getFeaturedProducts } from '@/data/products';
-import { brands } from '@/data/brands';
+import { categories } from '@/data/products';
 import { buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
+import prisma from '@/lib/prisma';
 
-export default function Home() {
-  const featuredProducts = getFeaturedProducts();
+export default async function Home() {
+  const [featuredProducts, brands] = await Promise.all([
+    prisma.product.findMany({ where: { featured: true }, take: 4, orderBy: { createdAt: 'desc' } }),
+    prisma.brand.findMany({ take: 4, orderBy: { createdAt: 'asc' } }),
+  ]);
 
   return (
     <>
@@ -46,7 +49,7 @@ export default function Home() {
             align="center"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {featuredProducts.slice(0, 4).map((product) => (
+            {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -81,7 +84,7 @@ export default function Home() {
             align="center"
           />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {brands.slice(0, 4).map((brand) => (
+            {brands.map((brand) => (
               <BrandCard key={brand.id} brand={brand} />
             ))}
           </div>

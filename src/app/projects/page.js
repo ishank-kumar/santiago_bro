@@ -1,14 +1,16 @@
 import Hero from '@/components/Hero/Hero';
 import SectionHeading from '@/components/SectionHeading/SectionHeading';
 import ProjectCard from '@/components/ProjectCard/ProjectCard';
-import { projects } from '@/data/projects';
+import prisma from '@/lib/prisma';
 
 export const metadata = {
   title: 'Our Projects | Santiago Bros',
   description: 'A showcase of our finest interior design collaborations.',
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await prisma.project.findMany({ orderBy: { createdAt: 'desc' } });
+
   return (
     <>
       <Hero

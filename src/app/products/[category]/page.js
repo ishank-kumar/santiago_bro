@@ -1,8 +1,9 @@
-import { getProductsByCategory, getCategoryById, categories } from '@/data/products';
+import { categories } from '@/data/products';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import SectionHeading from '@/components/SectionHeading/SectionHeading';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import prisma from '@/lib/prisma';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,15 +13,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
-export async function generateStaticParams() {
-  return categories.map((cat) => ({
-    category: cat.id,
-  }));
-}
-
 export async function generateMetadata({ params }) {
   const { category } = await params;
-  const categoryData = getCategoryById(category);
+  const categoryData = categories.find(c => c.id === category);
   
   if (!categoryData) return { title: 'Category Not Found' };
   
@@ -32,13 +27,16 @@ export async function generateMetadata({ params }) {
 
 export default async function CategoryPage({ params }) {
   const { category } = await params;
-  const categoryData = getCategoryById(category);
+  const categoryData = categories.find(c => c.id === category);
   
   if (!categoryData) {
     notFound();
   }
 
-  const categoryProducts = getProductsByCategory(category);
+  const categoryProducts = await prisma.product.findMany({
+    where: { category },
+    orderBy: { createdAt: 'desc' },
+  });
 
   return (
     <>
