@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/sheet";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@clerk/nextjs";
-import { Trash, ShoppingBag, X, ArrowRight, RefreshCw } from "lucide-react";
+import { Trash, ShoppingBag, X, ArrowRight, RefreshCw, Minus, Plus } from "lucide-react";
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CartDrawer({ open, setOpen }) {
-  const { cart, removeFromCart, updateStatus, cartTotal, cartCount, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity, updateStatus, cartTotal, cartCount, clearCart } = useCart();
   const { user, isSignedIn } = useUser();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -122,12 +122,36 @@ export default function CartDrawer({ open, setOpen }) {
                   </div>
                   
                   <div className="flex justify-between items-end">
-                    <div className="space-y-1.5 font-light">
-                       <span className="text-xs bg-secondary px-2 py-0.5 rounded text-primary capitalize font-medium">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] bg-secondary px-2 py-0.5 rounded text-primary capitalize font-medium w-fit">
                         {item.status.replace('-', ' ')}
                       </span>
+                      <div className="flex items-center border border-border rounded-md overflow-hidden h-8 w-24">
+                        <button 
+                          onClick={() => updateQuantity(item.id, -1)}
+                          className="flex-1 flex items-center justify-center hover:bg-secondary transition-colors"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus size={12} />
+                        </button>
+                        <span className="flex-1 flex items-center justify-center text-xs font-medium border-x border-border">
+                          {item.quantity}
+                        </span>
+                        <button 
+                          onClick={() => updateQuantity(item.id, 1)}
+                          className="flex-1 flex items-center justify-center hover:bg-secondary transition-colors"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus size={12} />
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-primary">{formatPrice(item.price)}</p>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-primary">{formatPrice(item.price * item.quantity)}</p>
+                      {item.quantity > 1 && (
+                        <p className="text-[10px] text-muted-foreground">{formatPrice(item.price)} each</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -9,6 +9,7 @@ import SectionHeading from '@/components/SectionHeading/SectionHeading';
 import { Button } from '@/components/ui/button';
 import { toast } from "sonner";
 import { RefreshCw } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +32,8 @@ export default function ProductPageClient({ params }) {
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const { addToCart } = useCart();
   
   const categoryName = categories.find(c => c.id === category)?.name || 'Category';
 
@@ -63,13 +66,7 @@ export default function ProductPageClient({ params }) {
   };
 
   const handleAddToCart = () => {
-    toast.success(`${product.name} added to inquiry list`, {
-      description: "You can send all your inquiries from the Showroom page.",
-      action: {
-        label: "View List",
-        onClick: () => console.log("View list clicked")
-      }
-    });
+    addToCart(product);
   };
 
   if (loading) {

@@ -7,9 +7,9 @@ import { categories } from '@/data/products';
 import { buttonVariants } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import CartDrawer from '@/components/Cart/CartDrawer';
-import { 
-  SignInButton, 
-  UserButton, 
+import {
+  SignInButton,
+  UserButton,
   useUser
 } from '@clerk/nextjs';
 import {
@@ -23,14 +23,16 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Menu, X, ShoppingBag, LayoutDashboard } from 'lucide-react';
 
-export default function Navbar() {
+export default function Navbar({ dbRole, serverUserId }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const { cartCount } = useCart();
-  const { user, isLoaded } = useUser();  const isAdmin = user?.publicMetadata?.role === 'admin';
+  const { user, isLoaded } = useUser();
+  const isAdmin = dbRole === 'ADMIN';
 
-  const userId = user?.id;
+  const userId = user?.id || serverUserId;
+  console.log(`[Navbar] User: ${userId}, Role: ${dbRole}, [isAdmin]: ${isAdmin}`);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -57,9 +59,8 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-border' : 'bg-transparent'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-border' : 'bg-transparent'
+          }`}
       >
         <nav className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo */}
@@ -126,7 +127,7 @@ export default function Navbar() {
           {/* Actions */}
           <div className="flex items-center gap-3 lg:gap-6">
             {/* Cart Trigger */}
-            <button 
+            <button
               onClick={() => setCartOpen(true)}
               className="relative p-2 text-foreground hover:text-primary transition-colors"
               aria-label="Open cart"
@@ -144,8 +145,8 @@ export default function Navbar() {
               {userId ? (
                 <>
                   {isAdmin && (
-                    <Link 
-                      href="/admin" 
+                    <Link
+                      href="/admin"
                       className="p-2 text-muted-foreground hover:text-primary transition-colors"
                       title="Admin Dashboard"
                     >
@@ -179,9 +180,8 @@ export default function Navbar() {
 
         {/* Mobile Nav Overlay */}
         <div
-          className={`fixed inset-0 bg-background/95 backdrop-blur-xl z-50 flex flex-col justify-center items-center transition-all duration-300 ${
-            mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-          }`}
+          className={`fixed inset-0 bg-background/95 backdrop-blur-xl z-50 flex flex-col justify-center items-center transition-all duration-300 ${mobileOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+            }`}
         >
           <div className="flex flex-col gap-8 text-center px-4">
             <Link href="/about" className="font-serif text-3xl font-medium tracking-wide">About</Link>
@@ -200,7 +200,7 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                 <SignInButton mode="modal">
+                <SignInButton mode="modal">
                   <button className="text-xl font-medium uppercase tracking-widest">
                     Login
                   </button>
@@ -218,6 +218,8 @@ export default function Navbar() {
     </>
   );
 }
+
+
 
 function getCategoryIcon(id) {
   const icons = {
