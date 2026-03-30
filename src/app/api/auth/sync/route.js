@@ -13,9 +13,6 @@ export async function POST() {
     const email = user.emailAddresses[0].emailAddress;
     const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
     const image = user.imageUrl;
-    
-    // Determine role from Clerk's public metadata
-    const role = user.publicMetadata.role === 'admin' ? 'ADMIN' : 'USER';
 
     const dbUser = await prisma.user.upsert({
       where: { clerkId: user.id },
@@ -23,14 +20,13 @@ export async function POST() {
         email,
         name,
         image,
-        role
       },
       create: {
         clerkId: user.id,
         email,
         name,
         image,
-        role
+        role: 'USER' // Default role for all new logins
       }
     });
 

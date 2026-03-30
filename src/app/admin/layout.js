@@ -12,7 +12,25 @@ import {
   MessageSquare
 } from 'lucide-react';
 
-export default function AdminLayout({ children }) {
+import prisma from "@/lib/prisma";
+import { redirect } from 'next/navigation';
+import { auth as clerkAuth } from "@clerk/nextjs/server";
+
+export default async function AdminLayout({ children }) {
+  const { userId } = await clerkAuth();
+
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
+  // Double-check the user's role in the database
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: userId }
+  });
+
+  if (dbUser?.role !== 'ADMIN') {
+    redirect('/');
+  }
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
     { name: 'Consultations', icon: MessageSquare, href: '/admin/consultations' },
